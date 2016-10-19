@@ -1,0 +1,60 @@
+<html ng-app="sample">
+  <head>
+    <title>Connecting Node.js app to MySql</title>
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/font-awesome.min.css">
+    <script src = "js/angular.min.js"></script>
+    <script type="text/javascript">
+        var app = angular.module('sample',[]);
+        app.controller('sample', function ($scope,$http,$timeout) { 
+            
+            var TypeTimer;                
+            var TypingInterval = 1000;
+
+            $scope.keyup = function() {
+                $timeout.cancel(TypeTimer);
+                TypeTimer=$timeout( function(){ get_data(); }, TypingInterval);
+            };
+
+            $scope.keydown = function(){
+                $timeout.cancel(TypeTimer);
+            };
+
+            function get_data(){
+                var name=$scope.name;
+                $http.post('/get_data',{name:name}).success(function(data, status, headers, config) {
+                   $scope.data_server=data;
+                }).error(function(data, status) {
+                    alert("Connection Error");
+                });
+            }            
+        });
+    </script>
+  </head>
+  <body ng-controller="sample">
+    <div class="container">
+      <div id="name-group" class="form-group">
+        <label>Type something</label>
+        <br/>
+        <input type="text" class="form-control"  ng-model="name" ng-keyup="keyup()" ng-keydown="keydown()" ng-blur="blur()"  ng-change="change()" placeholder="Type here and check the Title in Tab"/>
+        <br/>
+      </div>
+
+      <div class="rows">
+        <div class="col-md-12">
+          <div class="data" ng-repeat="data in data_server">
+            {{ data.name }}
+            <hr/>
+          </div>
+          <div ng-show="data_server.length == 0"  >
+            <div class="alert alert-info" >
+              <p class="text-center" >
+                Sorry, Right now we don't have any results for you.  
+              </p >
+            </div >
+          </div >
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
